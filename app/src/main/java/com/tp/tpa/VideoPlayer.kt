@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -126,9 +126,8 @@ fun VideoPlayer(
                             .size(48.dp)
                             .padding(8.dp)
                             .rotate(if (qualityMenuExpanded) 180f else 0f)
-
                             .clickable { qualityMenuExpanded = true },
-                        imageVector = Icons.Filled.KeyboardArrowDown,
+                        imageVector = Icons.Filled.ArrowDropDown,
                         contentDescription = stringResource(R.string.cd_quality_dropdown),
                         tint = Color.White
                     )
