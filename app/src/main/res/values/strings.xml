@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">TPA</string>
-    <string name="quality">Quality</string>
-    <string name="video_quality_auto">Auto</string>
+    <string name="txt_quality">Quality : %s</string>
+    <string name="txt_video_quality_auto">Auto</string>
+    <string name="cd_quality_dropdown">Quality Dropdown</string>
+    <string name="cd_toggle_fullscreen">Toggle Fullscreen</string>
 </resources>

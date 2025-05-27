@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.media3.common.util.UnstableApi
 import com.tp.tpa.ui.theme.TPATheme
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
 
@@ -29,6 +30,7 @@ class MainActivity : ComponentActivity() {
                         videoPlayerViewModel = viewModel,
                         mediaUrl = "https://bitmovin-a.akamaihd.net/content/art-of-motion_drm/mpds/11331.mpd",
                         licenseUrl = "https://cwip-shaka-proxy.appspot.com/no_auth",
+                        startPosition = TimeUnit.MINUTES.toMillis(1)
                     )
                 }
             }

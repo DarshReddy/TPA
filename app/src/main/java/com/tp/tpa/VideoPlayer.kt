@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.view.View
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -61,8 +62,8 @@ fun VideoPlayer(
     val trackSelector = videoPlayerViewModel.trackSelector
     val qualityFormats = videoPlayerViewModel.qualityFormats
 
-    val qualityLabels by remember(qualityFormats.size) {
-        derivedStateOf { listOf(context.getString(R.string.video_quality_auto)) + qualityFormats.map { "${it.height}p" } }
+    val qualityLabels by remember {
+        derivedStateOf { listOf(context.getString(R.string.txt_video_quality_auto)) + qualityFormats.map { "${it.height}p" } }
     }
     var qualityMenuExpanded by rememberSaveable { mutableStateOf(false) }
     var isFullscreen by rememberSaveable { mutableStateOf(false) }
@@ -72,7 +73,7 @@ fun VideoPlayer(
         videoPlayerViewModel.initialize(
             mediaUrl,
             licenseUrl,
-            maxOf(startPosition ?: 0, exoPlayer.currentPosition)
+            startPosition
         )
     }
 
@@ -113,23 +114,24 @@ fun VideoPlayer(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = stringResource(R.string.quality),
+                    text = stringResource(
+                        R.string.txt_quality,
+                        qualityLabels[videoPlayerViewModel.selectedQuality.intValue]
+                    ),
                     color = Color.White,
                 )
                 Box {
-                    IconButton(
-                        onClick = { qualityMenuExpanded = true }
-                    ) {
-                        Icon(
-                            imageVector = if (qualityMenuExpanded) {
-                                Icons.Filled.KeyboardArrowUp
-                            } else {
-                                Icons.Filled.KeyboardArrowDown
-                            },
-                            contentDescription = "Quality Dropdown",
-                            tint = Color.White
-                        )
-                    }
+                    Icon(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .padding(8.dp)
+                            .rotate(if (qualityMenuExpanded) 180f else 0f)
+
+                            .clickable { qualityMenuExpanded = true },
+                        imageVector = Icons.Filled.KeyboardArrowDown,
+                        contentDescription = stringResource(R.string.cd_quality_dropdown),
+                        tint = Color.White
+                    )
                     DropdownMenu(
                         expanded = qualityMenuExpanded,
                         onDismissRequest = { qualityMenuExpanded = false }
@@ -150,19 +152,21 @@ fun VideoPlayer(
                                 onClick = {
                                     qualityMenuExpanded = false
                                     val params = trackSelector.buildUponParameters()
-                                    if (label == context.getString(R.string.video_quality_auto)) {
+                                    if (label == context.getString(R.string.txt_video_quality_auto)) {
                                         params.clearVideoSizeConstraints()
                                     } else {
-                                        val fmt = qualityFormats[idx - 1]
-                                        params.setMaxVideoSize(fmt.width, fmt.height)
+                                        val format = qualityFormats[idx - 1]
+                                        params.setMaxVideoSize(format.width, format.height)
                                     }
                                     trackSelector.parameters = params.build()
                                     videoPlayerViewModel.selectedQuality.intValue = idx
                                 },
                                 modifier = Modifier.background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(
-                                        alpha = 0.1f
-                                    ) else Color.Transparent
+                                    if (isSelected) {
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                    } else {
+                                        Color.Transparent
+                                    }
                                 )
                             )
                         }
@@ -184,7 +188,7 @@ fun VideoPlayer(
                                 R.drawable.ic_fullscreen
                             }
                         ),
-                        contentDescription = "Toggle Fullscreen",
+                        contentDescription = stringResource(R.string.cd_toggle_fullscreen),
                         tint = Color.White
                     )
                 }
