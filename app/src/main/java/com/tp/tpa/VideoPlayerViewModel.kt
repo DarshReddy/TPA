@@ -29,7 +29,7 @@ class VideoPlayerViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun initialize(mediaUrl: String, licenseUrl: String, startPosition: Long?) {
-        exoPlayer.stop()
+
         val drmConfig = MediaItem.DrmConfiguration.Builder(C.WIDEVINE_UUID)
             .setLicenseUri(licenseUrl)
             .build()
@@ -37,11 +37,12 @@ class VideoPlayerViewModel(application: Application) : AndroidViewModel(applicat
             .setUri(mediaUrl)
             .setDrmConfiguration(drmConfig)
             .build()
-
-        exoPlayer.setMediaItem(mediaItem)
-        startPosition?.let { exoPlayer.seekTo(it) }
-        exoPlayer.prepare()
-        exoPlayer.playWhenReady = true
+        if (exoPlayer.currentMediaItem?.mediaId != mediaItem.mediaId) {
+            exoPlayer.setMediaItem(mediaItem)
+            startPosition?.let { exoPlayer.seekTo(it) }
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
+        }
     }
 
     override fun onCleared() {
