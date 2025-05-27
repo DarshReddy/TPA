@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.media3.common.util.UnstableApi
-import com.tp.tpa.components.VideoPlayer
 import com.tp.tpa.ui.theme.TPATheme
 
 class MainActivity : ComponentActivity() {
