@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TPA</string>
+    <string name="quality">Quality</string>
+    <string name="video_quality_auto">Auto</string>
 </resources>
