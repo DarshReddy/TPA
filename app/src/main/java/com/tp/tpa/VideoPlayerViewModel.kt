@@ -2,6 +2,7 @@ package com.tp.tpa
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
@@ -20,7 +21,7 @@ class VideoPlayerViewModel(application: Application) : AndroidViewModel(applicat
     val trackSelector = DefaultTrackSelector(getApplication())
     var isBuffering = mutableStateOf(true)
     val qualityFormats = mutableStateListOf<Format>()
-
+    val selectedQuality = mutableIntStateOf(0)
 
     val exoPlayer: ExoPlayer by lazy {
         ExoPlayer.Builder(getApplication())

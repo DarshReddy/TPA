@@ -3,6 +3,7 @@ package com.tp.tpa
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.view.View
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +38,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 
@@ -50,6 +55,7 @@ fun VideoPlayer(
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
+    val lifecycleState = LocalLifecycleOwner.current.lifecycle.currentStateAsState()
 
     val exoPlayer = videoPlayerViewModel.exoPlayer
     val trackSelector = videoPlayerViewModel.trackSelector
@@ -68,6 +74,10 @@ fun VideoPlayer(
             licenseUrl,
             maxOf(startPosition ?: 0, exoPlayer.currentPosition)
         )
+    }
+
+    LaunchedEffect(lifecycleState.value) {
+        exoPlayer.playWhenReady = lifecycleState.value == Lifecycle.State.RESUMED
     }
 
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
@@ -125,8 +135,18 @@ fun VideoPlayer(
                         onDismissRequest = { qualityMenuExpanded = false }
                     ) {
                         qualityLabels.forEachIndexed { idx, label ->
+                            val isSelected = videoPlayerViewModel.selectedQuality.intValue == idx
                             DropdownMenuItem(
-                                text = { Text(label) },
+                                text = {
+                                    Text(
+                                        text = label,
+                                        color = if (isSelected) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface
+                                        }
+                                    )
+                                },
                                 onClick = {
                                     qualityMenuExpanded = false
                                     val params = trackSelector.buildUponParameters()
@@ -137,7 +157,13 @@ fun VideoPlayer(
                                         params.setMaxVideoSize(fmt.width, fmt.height)
                                     }
                                     trackSelector.parameters = params.build()
-                                }
+                                    videoPlayerViewModel.selectedQuality.intValue = idx
+                                },
+                                modifier = Modifier.background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(
+                                        alpha = 0.1f
+                                    ) else Color.Transparent
+                                )
                             )
                         }
                     }
