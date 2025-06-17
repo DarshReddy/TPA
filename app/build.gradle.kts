@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.tp.tpa"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.tp.tpa"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -57,6 +57,8 @@ dependencies {
     implementation(libs.moshi.kotlin)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.coroutines.android)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

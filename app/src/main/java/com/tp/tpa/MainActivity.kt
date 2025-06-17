@@ -42,7 +42,6 @@ class MainActivity : ComponentActivity() {
                         selectedScreen = 0
                         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                         videoPlayerViewModel.exoPlayer.pause()
-                        videoMetaViewModel.reset()
                     }
                 }
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

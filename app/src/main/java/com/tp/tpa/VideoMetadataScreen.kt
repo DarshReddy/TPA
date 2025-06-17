@@ -1,5 +1,6 @@
 package com.tp.tpa
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,8 +21,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.tp.tpa.data.YouTubeVideo
+import coil3.compose.AsyncImage
+import com.tp.tpa.data.People
+import com.tp.tpa.data.VideoMetadata
+import com.tp.tpa.network.ApiResult
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @Composable
 fun VideoMetadataScreen(
@@ -29,9 +37,7 @@ fun VideoMetadataScreen(
     viewModel: VideoMetaViewModel,
 ) {
     var videoId by rememberSaveable { mutableStateOf("") }
-    val video by viewModel.video.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val videoMetadata by viewModel.videoMetadata.collectAsState()
 
     Column(
         modifier = modifier
@@ -42,7 +48,7 @@ fun VideoMetadataScreen(
         OutlinedTextField(
             value = videoId,
             onValueChange = { videoId = it },
-            label = { Text("YouTube Video ID") },
+            label = { Text("Prime Video ID") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -54,25 +60,87 @@ fun VideoMetadataScreen(
             Text("Fetch Metadata")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        when {
-            isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            error != null -> Text("Error: $error", color = MaterialTheme.colorScheme.error)
-            video != null -> video?.let { VideoDetails(it) }
+        when (videoMetadata) {
+            is ApiResult.Success -> VideoDetails((videoMetadata as ApiResult.Success<VideoMetadata>).data)
+            is ApiResult.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            is ApiResult.Error -> Text(
+                "Error: ${(videoMetadata as ApiResult.Error).message}",
+                color = MaterialTheme.colorScheme.error
+            )
+
+            null -> {}
         }
     }
 }
 
 @Composable
-fun VideoDetails(video: YouTubeVideo) {
-    Text("Title: ${video.snippet.title}", style = MaterialTheme.typography.titleMedium)
-    Spacer(modifier = Modifier.height(4.dp))
-    Text("Channel: ${video.snippet.channelTitle}")
-    Spacer(modifier = Modifier.height(4.dp))
-    Text("Published: ${video.snippet.publishedDateTime}")
-    Spacer(modifier = Modifier.height(4.dp))
-    Text("Duration: ${video.contentDetails.duration}")
-    Spacer(modifier = Modifier.height(4.dp))
-    Text("Views: ${video.statistics.viewCount}")
-    Spacer(modifier = Modifier.height(4.dp))
-    video.statistics.likeCount?.let { Text("Likes: $it") }
+fun VideoDetails(videoMetadata: VideoMetadata) {
+    with(videoMetadata) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .height(160.dp)
+                    .fillMaxWidth(),
+                model = image,
+                placeholder = painterResource(R.drawable.ic_launcher_monochrome),
+                contentDescription = stringResource(R.string.video_image)
+            )
+            DetailRow(label = "Title", value = title)
+            DetailRow(label = "Synopsis", value = synopsis)
+            DetailRow(label = "Runtime", value = runTime)
+            DetailRow(label = "Release Date", value = releaseData)
+            DetailRow(label = "Genres", value = genres?.joinToString(", "))
+            DetailRow(label = "Audio Tracks", value = audioTracks?.joinToString(", "))
+            DetailRow(
+                label = "Directors",
+                value = people?.directors?.joinToString(", ")
+            )
+            DetailRow(label = "Actors", value = people?.actors?.joinToString(", "))
+        }
+    }
+}
+
+@Composable
+private fun DetailRow(label: String, value: String?) {
+    if (!value.isNullOrBlank()) {
+        Column {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+
+@SuppressLint("StateFlowValueCalledInComposition")
+@Preview(backgroundColor = 0xFFFFFFFF, showBackground = true)
+@Composable
+fun VideoMetadataScreenPreview() {
+    val viewModel = VideoMetaViewModel()
+    // Simulate some state for preview
+    (viewModel.videoMetadata as MutableStateFlow).value = ApiResult.Success(
+        VideoMetadata(
+            title = "Sample Title",
+            synopsis = "Sample Synopsis",
+            genres = listOf("Action", "Adventure"),
+            audioTracks = listOf("English", "Spanish"),
+            people = People(
+                directors = listOf("Director 1", "Director 2"),
+                actors = listOf("Actor 1", "Actor 2")
+            ),
+            runTime = "2h 41m",
+            releaseData = "May 20, 2023",
+            image = "https://example.com/image.jpg"
+        )
+    )
+    VideoMetadataScreen(viewModel = viewModel)
 }
